@@ -128,21 +128,22 @@ void initialize_user_helper() {
                     cout<<"total comments: "<<total_comments<<endl;
                     if(total_comments > 0) {
                         //every comment of certain post of certain user
+                        post_file.get(empty_char);
                         for(int comment=0; comment<total_comments; ++ comment) {//determine comment user
                             //cout<<"enter comment recursion"<<endl;
-                            post_file.get(empty_char);
                             string comment_name;
                             getline(post_file,comment_name);//？
                             //cout<<"comment name"<<comment_name<<endl;
                             for(int user_index=0; user_index<user_count; ++ user_index) {
                                 if (all_users[user_index].username == comment_name) {
-                                    cout<<"enter comment user recursion"<<endl;
+                                    //cout<<"enter comment user recursion"<<endl;
+                                    User_t* tmp_str=all_users + user_index;
                                     all_users[i].posts[post_id - 1].comments[comment].user = all_users + user_index;
-                                    cout << all_users[i].posts[post_id - 1].comments[comment].user->username<< endl;
+                                    cout << tmp_str->username<< endl;
                                     break;
                                 }
                             }
-                            cout<<"quit comment user recursion"<<endl;
+                            //cout<<"quit comment user recursion"<<endl;
                             //determine comment text
                             string tmp;
                             //post_file.get(empty_char);
@@ -152,14 +153,14 @@ void initialize_user_helper() {
                             //cout<<all_users[i].posts[post_id-1].comments[comment].text<<endl;
                         }
                     }
-                } //finish finding followings
+                }
 
             }
         }
 
     }
 }
-//TODO: CORRECT,finish initializing users(except posts)
+//TODO: CORRECT,finish initializing users and posts
 
 
 int main(){
