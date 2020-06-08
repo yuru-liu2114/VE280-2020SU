@@ -8,6 +8,7 @@ using namespace std;
 string user_address[MAX_USERS];
 User_t all_users[MAX_USERS];
 int user_count=0;
+//TODO: CORRECT,finish initializing users and posts
 void initialize_user_helper() {
     ifstream username_file;
     string first_address, second_address;
@@ -70,7 +71,7 @@ void initialize_user_helper() {
             for (post_id = 1; post_id <= all_users[i].num_posts; ++post_id) {
                 string post_index = to_string(post_id);
                 post_address = user_address[i] + "/posts/" + post_index;
-                cout << all_users[i].username << post_address << endl;
+                //cout << all_users[i].username << post_address << endl;
                 ifstream post_file;
                 post_file.open(post_address);
                 getline(post_file, all_users[i].posts[post_id - 1].title);
@@ -121,13 +122,14 @@ void initialize_user_helper() {
                             }
                         }
                         //cout<<all_users[i].username<<"following"<<all_users[i].following[k]->username<<endl;
-                    }
+                    }}
                 //TODO: deal with comments
                 post_file>>all_users[i].posts[post_id-1].num_comments;
                     int total_comments=all_users[i].posts[post_id-1].num_comments;
-                    cout<<"total comments: "<<total_comments<<endl;
+                    //<<"total comments: "<<total_comments<<endl;
                     if(total_comments > 0) {
                         //every comment of certain post of certain user
+                        char empty_char;
                         post_file.get(empty_char);
                         for(int comment=0; comment<total_comments; ++ comment) {//determine comment user
                             //cout<<"enter comment recursion"<<endl;
@@ -139,17 +141,14 @@ void initialize_user_helper() {
                                     //cout<<"enter comment user recursion"<<endl;
                                     User_t* tmp_str=all_users + user_index;
                                     all_users[i].posts[post_id - 1].comments[comment].user = all_users + user_index;
-                                    cout << tmp_str->username<< endl;
+                                    // << tmp_str->username<< endl;
                                     break;
                                 }
                             }
                             //cout<<"quit comment user recursion"<<endl;
-                            //determine comment text
+                            //TODO: determine comment text
                             string tmp;
-                            //post_file.get(empty_char);
-                            getline(post_file,tmp);
-                            cout<<tmp<<endl;
-                            //getline(post_file,all_users[i].posts[post_id-1].comments[comment].text);
+                            getline(post_file,all_users[i].posts[post_id-1].comments[comment].text);
                             //cout<<all_users[i].posts[post_id-1].comments[comment].text<<endl;
                         }
                     }
@@ -159,11 +158,12 @@ void initialize_user_helper() {
         }
 
     }
-}
-//TODO: CORRECT,finish initializing users and posts
+
+
 
 
 int main(){
     initialize_user_helper();
+
     return 0;
 }
