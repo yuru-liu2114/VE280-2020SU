@@ -604,10 +604,27 @@ void visit(User_t& user1, User_t& user2){
 void printTag(const Tag_t& tag, unsigned int rank){ //trending
     cout << rank << " " << tag.tag_content << ": " << tag.tag_score << endl;
 }
-void trending(Tag_t* all_tags) {
+void trending(Tag_t* all_tags,int num) {
     for(int i=0; i<tag_count; ++i) {
-        cout<<(all_tags+i)->tag_content<<" "<<(all_tags+i)->tag_score<<endl;
+        for(int j=i+1; j<tag_count; ++j) {
+            if (all_tags[j].tag_score > all_tags[i].tag_score){
+                string content;
+                int score;
+                score = all_tags[i].tag_score;
+                content=all_tags[i].tag_content;
+                all_tags[i].tag_score = all_tags[j].tag_score;
+                all_tags[i].tag_content=all_tags[j].tag_content;
+                all_tags[j].tag_score = score;
+                all_tags[j].tag_content = content;
+                //cout<<i<<" "<<j<<endl;
+                }
+        }
     }
+    cout<<">> trending"<<endl;
+    for(int i=0; i<num; ++i) {
+        printTag(all_tags[i],i+1);
+    }
+
 }
 void command_execute() {
     //User_t object_user, subject_user;
@@ -664,7 +681,10 @@ void command_execute() {
         unpost(subject_user,post_id);
     }
     if (subject =="trending") {
-        trending(all_tags);
+        istringstream s(command);
+        int num;
+        s>>num;
+        trending(all_tags,num);
     }
         //cout<<"subject: "<<subject_user.username<<"object: "<<object_user.username<<endl;
     //1. 使用引用； 2. 在函数结束后value会消失，以便下次赋值
