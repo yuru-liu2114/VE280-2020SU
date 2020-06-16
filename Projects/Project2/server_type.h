@@ -27,6 +27,10 @@ const unsigned int MAX_COMMENTS = 50;
 // Max number of tags per post
 const unsigned int MAX_TAGS = 5;
 
+// Max number of likes per post
+const unsigned int MAX_LIKES = 20;
+
+
 
 /* Exception */
 enum Error_t {
