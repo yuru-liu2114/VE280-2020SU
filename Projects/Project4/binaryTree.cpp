@@ -18,12 +18,10 @@ Node::Node(const std::string &str, int num, Node *left, Node *right) {
 }
 
 Node* Node::leftSubtree() const{
-    // TODO: implement this function.
     return left;
 }
 
 Node* Node::rightSubtree() const{
-    // TODO: implement this function.
     return right;
 }
 
@@ -39,9 +37,7 @@ int Node::getnum() const {
 
 Node *Node::mergeNodes(Node *leftNode, Node *rightNode) {
     // TODO: implement this function.
-    Node* newnode = new Node("",0);
-    newnode->str=leftNode->str+rightNode->str;
-    newnode->num=leftNode->num+rightNode->num;
+    Node *newnode=new Node(leftNode->str+rightNode->str,leftNode->num+rightNode->num,leftNode,rightNode);
     return newnode;
 }
 void Node::setleft(Node *n){
@@ -57,7 +53,8 @@ void Node::incnum() {
 
 BinaryTree::BinaryTree(Node *rootNode){
     // TODO: implement this function.
-    root=rootNode;
+    if(rootNode!= nullptr){
+        root=rootNode;}
 }
 void recur_destroy(Node* node) {
     if(node== nullptr){return;}
@@ -70,93 +67,72 @@ BinaryTree::~BinaryTree(){
 }
 
 
-int find_depth_helper(int depth,Node* node){
-    if (node->rightSubtree()== nullptr && node->leftSubtree()== nullptr) {return depth;}
-    depth++;
-    if (node->rightSubtree()!= nullptr && node->leftSubtree()!= nullptr) {return max(find_depth_helper(depth,node->leftSubtree()),find_depth_helper(depth,node->rightSubtree()));}
-    if (node->rightSubtree()== nullptr){return find_depth_helper(depth,node->leftSubtree());}
-    return find_depth_helper(depth,node->rightSubtree());}
-int BinaryTree::depth() const {
-    int depth=1;
-    depth=find_depth_helper(depth,root);
-    return depth;
+int find_depth_helper(Node* node){
+    if (node== nullptr) {return 0;}
+    return 1+max(find_depth_helper(node->leftSubtree()),find_depth_helper(node->rightSubtree()));
 }
 
-int node_get_depth(Node* node){
-    int depth=find_depth_helper(1,node);
-    return depth;
+int BinaryTree::depth() const {
+    return find_depth_helper(root);
 }
-bool findpath_helper(const string &s, Node* node,string &result,string &finalstr,const int depth){
+
+bool findpath_helper(const string &s, Node* node,string result,string &finalstr,const int depth){
     if (node->getstr()==s){
         finalstr=result;
         return true;}
     if (node->leftSubtree()== nullptr && node->rightSubtree()== nullptr) {return false;}
-    if (node->leftSubtree()== nullptr){
-        result+="1";
-        return findpath_helper(s,node->rightSubtree(),result,finalstr,depth);}
-    if (node->rightSubtree()== nullptr) {
-        result+="0";
-        return findpath_helper(s,node->leftSubtree(),result,finalstr,depth);}
-    result+="0";
-    bool left=findpath_helper(s,node->leftSubtree(),result,finalstr,depth);
-    if(result.size()<depth-node_get_depth(node) || result[result.size()-1]=='0'){result=result.substr(0,result.size()-1)+"1";}
-    else {result=result.substr(0,depth-node_get_depth(node))+"1";}
-    bool right=findpath_helper(s,node->rightSubtree(),result,finalstr,depth);
+    if (node->leftSubtree()== nullptr){return findpath_helper(s,node->rightSubtree(),result+"1",finalstr,depth);}
+    if (node->rightSubtree()== nullptr) {return findpath_helper(s,node->leftSubtree(),result+"0",finalstr,depth);}
+    bool left=findpath_helper(s,node->leftSubtree(),result+"0",finalstr,depth);
+    bool right=findpath_helper(s,node->rightSubtree(),result+"1",finalstr,depth);
     return left||right;}
-
 string BinaryTree::findPath(const string &s) const{
-    // TODO: implement this function.
     string result,finalstr;
     int depth=this->depth();
     bool flag=findpath_helper(s,root,result,finalstr,depth);
     if(!flag){return "-1";}
     return finalstr;
 }
-void print_node_str(Node* node){
-    cout<<node->getstr()<<" ";
-}
-void print_node_num(Node* node){
-    cout<<node->getnum()<<" ";
-}
 void preorder_helper(Node* node){
     if(node==nullptr){return;}
-    print_node_num(node);
+    cout<<node->getnum()<<" ";
     preorder_helper(node->leftSubtree());
     preorder_helper(node->rightSubtree());
 }
 void BinaryTree::preorder_num() const {
     preorder_helper(root);
+    cout<<endl;
 }
 void inorder_helper(Node* node){
     if(node==nullptr){return;}
     inorder_helper(node->leftSubtree());
-    print_node_str(node);
+    cout<<node->getstr()<<" ";
     inorder_helper(node->rightSubtree());
 }
 void BinaryTree::inorder_str() const {
     inorder_helper(root);
+    cout<<endl;
 }
 void postorder_helper(Node* node){
     if(node==nullptr){return;}
     postorder_helper(node->leftSubtree());
     postorder_helper(node->rightSubtree());
-    print_node_num(node);
+    cout<<node->getnum()<<" ";
 }
 void BinaryTree::postorder_num() const {
     postorder_helper(root);
+    cout<<endl;
 }
-int findsum_helper(Node* node,int sum){
+int findsum_helper(Node* node){
     if(node==nullptr){return 0;}
-    else{cout<<node->getstr()<<" "<<node->getnum()<<endl;
-        //sum+=node->getnum();
-        cout<<sum<<endl;
-        return sum+node->getnum()+findsum_helper(node->leftSubtree(),sum)+findsum_helper(node->rightSubtree(),sum);
+    else{
+        return node->getnum()+findsum_helper(node->leftSubtree())+findsum_helper(node->rightSubtree());
     }}
 int BinaryTree::sum() const {
     if(root==nullptr) {
         return 0;
     }
-    return findsum_helper(root,0);
+    return findsum_helper(root);
 }
 void findeverypath_helper(Node* node,int sum,vector<int>* sumvec) {
     sum+=node->getnum();
@@ -173,8 +149,10 @@ bool BinaryTree::allPathSumGreater(int sum) const {
     for(p=sumvector->begin();p!=sumvector->end();++p) {
         int tmp=*p;
         if(tmp<=sum) {
+            delete sumvector;
             return false;
         }}
+    delete sumvector;
     return true;
 }
 void inorder_vec_helper(Node* node, vector<int> *vec){
@@ -197,53 +175,21 @@ bool covered_helper(Node* thistree,Node* tree){
 bool BinaryTree::covered_by(const BinaryTree &tree) const {
     return covered_helper(root, tree.root);
 }
-
-BinaryTree left_subtree_maker(Node* node){
-    BinaryTree* left_subtree=new BinaryTree();
-    if(node->leftSubtree()== nullptr) {return *left_subtree;}
-    delete left_subtree;
-    left_subtree=new BinaryTree(node->leftSubtree());
-    return *left_subtree;
-}
-BinaryTree right_subtree_maker(Node* node){
-    BinaryTree* right_subtree=new BinaryTree();
-    if(node->rightSubtree()== nullptr) {return *right_subtree;}
-    delete right_subtree;
-    right_subtree=new BinaryTree(node->rightSubtree());
-    return *right_subtree;
-}
-bool contained_helper(const BinaryTree& mytree,const BinaryTree& tree){
-    Node* treeroot=tree.root;
-    if(treeroot==nullptr || (treeroot->rightSubtree()== nullptr && treeroot->leftSubtree()==nullptr)){return false;}
-    bool cur=mytree.covered_by(tree);
-    BinaryTree left_tree=left_subtree_maker(treeroot);
-    BinaryTree right_tree=right_subtree_maker(treeroot);
-    bool left=mytree.covered_by(left_tree);
-    bool right=mytree.covered_by(right_tree);
-    if(cur || left || right) {return true;}
-    else {return contained_helper(mytree,left_tree) || contained_helper(mytree,right_tree);}
+bool if_contained(Node* mytree,Node* tree){
+    if(covered_helper(mytree,tree)){return true;}
+    if(tree== nullptr){return false;}
+    return (covered_helper(mytree,tree->leftSubtree()) || covered_helper(mytree,tree->rightSubtree()));
 }
 bool BinaryTree::contained_by(const BinaryTree &tree) const {
-    return contained_helper(*this, tree);
+    return if_contained(root,tree.root);
 }
-Node* copy_node(Node* node){
-    Node* newnode=new Node(node->getstr(),node->getnum());
-    return newnode;
-}
-void copytree_helper(Node* node,Node* newroot) {
-    if(node->leftSubtree() == nullptr && node->rightSubtree() == nullptr){return;}
-    if(node->leftSubtree()!= nullptr) {
-        Node* newleft=copy_node(node->leftSubtree());
-        newroot->setleft(newleft);
-        copytree_helper(node->leftSubtree(),newleft);}
-    if(node->rightSubtree()!= nullptr) {
-        Node* newright=copy_node(node->rightSubtree());
-        newroot->setright(newright);
-        copytree_helper(node->rightSubtree(),newright);}
+
+Node* copytree_helper(Node* node) {
+   if(node== nullptr){return nullptr;}
+   Node* newroot=new Node(node->getstr(),node->getnum(),copytree_helper(node->leftSubtree()),copytree_helper(node->rightSubtree()));
+   return newroot;
 }
 BinaryTree BinaryTree::copy() const {
-    Node* newroot=copy_node(root);
-    copytree_helper(root,newroot);
-    BinaryTree* newtree=new BinaryTree(newroot);
-    return *newtree;
+    BinaryTree tree(copytree_helper(root));
+    return tree;
 }
