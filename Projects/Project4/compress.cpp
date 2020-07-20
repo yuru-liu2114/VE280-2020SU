@@ -1,110 +1,78 @@
 #include "binaryTree.h"
 #include "huffmanTree.h"
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <vector>
+#include <algorithm>
 using namespace std;
 // int argc, char *argv[]
-Node* del_min(vector<Node*>& nodevec){
-    vector<Node*>::iterator p=nodevec.begin();
-    int min=(*p)->getnum();
-    int pos=0;
-    string min_str=(*p)->getstr();
-    Node *left=(*p)->leftSubtree();
-    Node *right=(*p)->rightSubtree();
-    for(;p!=nodevec.end();++p) {
-        int tmp=(*p)->getnum();
-        string tmp_str=(*p)->getstr();
-        if(tmp<min){
-            pos=p-nodevec.begin();
-            min=tmp;
-            min_str=(*p)->getstr();
-            left=(*p)->leftSubtree();
-            right=(*p)->rightSubtree();
-        }
-        else if(tmp==min){
-            if(tmp_str[0]<min_str[0]){
-                pos=p-nodevec.begin();
-                min=tmp;
-                min_str=tmp_str;
-                left=(*p)->leftSubtree();
-                right=(*p)->rightSubtree();
-            }
-        }
-    }
-    Node* remv=new Node(min_str,min,left,right);
-    nodevec.erase(nodevec.begin()+pos);
-    return remv;
-}
-void get_binary(Node* final_node,vector<Node*> copy) {
-    vector<Node*>::iterator p=copy.begin();
-    BinaryTree* tree=new BinaryTree(final_node);
-    for(;p!=copy.end();++p) {
-        string tmp=(*p)->getstr();
-        string binary=tree->findPath(tmp);
-        cout<<binary<<" ";
-    }
-    delete tree;
-}
-int main(int argc, char *argv[]) {
-    // TODO: implement this function
-    string line,bit,curr;
-    string filename=argv[argc-1];
+
+string read_file(const string& filename){
+    string line;
     ifstream iStream;
     iStream.open(filename);
-    getline(iStream,line);
-     iStream.close();
-    //line="aeistpaeistpaeistpaeitpaeipaeipaeipaeipaeipaeipeipeipepeen";
-    int linesize=line.size();
-    vector<Node*> nodevec;
-    vector<Node*> copyvec;
-
-    for(int i=0;i<linesize;++i) {
-        bit=line[i];
-        string::size_type idx;
-        idx=curr.find(bit);
-
-        if(idx==string::npos){
-            curr+=bit;
-            Node* newnode= new Node(bit,1, nullptr, nullptr);
-            nodevec.push_back(newnode);
-            copyvec.push_back(newnode);
-        }
-        else {
-            vector<Node*>::iterator p;
-            for(p=nodevec.begin();p!=nodevec.end();++p) {
-                if((*p)->getstr()==bit){
-                    (*p)->incnum();
-                    break;
-                }
-            }
+    if(!iStream){cout<<"cannot open file: "<<filename<<endl;}
+    getline(iStream,line,',');
+    iStream.close();
+    return line;
+}
+bool check_exist(Node* node[], int size,string cmp){
+    for(int i=0;i<size;++i) {
+        if(node[i]->getstr()==cmp){
+            return true;
         }
     }
-    vector<Node*>::iterator p;
-    for(p=nodevec.begin();p!=nodevec.end();++p) {
-        cout<<(*p)->getstr()<<" "<<(*p)->getnum()<<endl;
+   return false;
+}
+int search_index(Node* node[],int size,string tmp){
+    for(int i=0;i<size;++i){
+        if(node[i]->getstr()==tmp){
+            return i;
+        }
     }
-    while(nodevec.size()>1){
-        Node* rmv1=del_min(nodevec);
-        Node* rmv2=del_min(nodevec);
-        string add_str=rmv2->getstr()+rmv1->getstr();
-        int add_sum=rmv1->getnum()+rmv2->getnum();
-        Node* add=new Node(add_str,add_sum,rmv2,rmv1);
-        nodevec.push_back(add);
+    return -1;
+}
+bool compare(Node* node1,Node* node2){ //descending order: return a>b
+    if(node1->getnum() > node2->getnum()){return true;}
+    if(node1->getnum() == node2->getnum()){
+        return (node1->getstr()[0]>node2->getstr()[0]);
     }
-    cout<<"111"<<endl;
-    for(p=nodevec.begin();p!=nodevec.end();++p) {
-        cout<<(*p)->getstr()<<" "<<(*p)->getnum()<<endl;
+    return false;
+}
+HuffmanTree* construct_tree(string line){
+    Node* node[512];
+    int size=0;
+    for(char c : line){
+        string tmp(1,c);
+        if(check_exist(node,size,tmp)){
+            node[search_index(node,size,tmp)]->incnum();
+        }
+        else{
+            node[size++]=new Node(tmp,1);
+        }
     }
-    p=nodevec.begin();
-    Node* final_node = (*p);
-    cout<<"222"<<endl;
-    cout<<final_node->getstr()<<final_node->getnum()<<endl;
-    HuffmanTree tree(final_node);
-    if(argc==2){
-    get_binary(final_node,copyvec);}
-    if(argc==3){
-        tree.printTree();}
-return 0;
+    while(size>1){
+        sort(node,node+size,compare);
+        size--;
+        node[size-1]=Node::mergeNodes(node[size-1],node[size]);
+    }
+    return new HuffmanTree(node[0]);
+}
+void get_binary(HuffmanTree& tree,const string& line){
+    for(char c:line){
+        string tmp(1,c);
+        cout<<tree.findPath(tmp)<<" ";
+    }
+    cout<<endl;
 }
 
+int main(int argc, char* argv[]){
+    string filename=argv[argc-1];
+    string line=read_file(filename);
+    HuffmanTree* tree=construct_tree(line);
+    if(argc==3){tree->printTree();}
+    if(argc==2){get_binary(*tree,line);}
+    delete tree;
+    return 0;
+}
