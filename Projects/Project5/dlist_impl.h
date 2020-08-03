@@ -1,71 +1,53 @@
-#ifndef PROJECT_5_RELATED_FILES_DLIST_IMPL_H
-#define PROJECT_5_RELATED_FILES_DLIST_IMPL_H
+#ifndef P5_DLIST_IMPL_H
+#define P5_DLIST_IMPL_H
 
 #include <iostream>
 #include "dlist.h"
 
-
 template<class T>
 Dlist<T>::Dlist() {
-    node *newnode = new node;
-    newnode->op = NULL;
-    newnode->next = NULL;
-    newnode->prev = NULL;
-    first = newnode;
-    last = newnode;
+    first = NULL;
+    last = NULL;
 }
 
 template<class T>
 bool Dlist<T>::isEmpty() const {
-    if (!first && !last) {
-        return true;
-    }
-    return (first->op == NULL);
+    return first == NULL && last == NULL;
 }
 
 template<class T>
 void Dlist<T>::insertFront(T *op) {
     if (op == NULL) { return; }
-    if (isEmpty() && first!=NULL) {
-        first->op = op;
-        return;
-    }
     node *tmp = new node;
     tmp->op = op;
-    if(!isEmpty()){
+    if (isEmpty()) {
+        last = tmp;
+        first = tmp;
+        tmp->next = NULL;
+        tmp->prev = NULL;
+    } else {
         tmp->next = first;
         tmp->prev = NULL;
         first->prev = tmp;
         first = tmp;
-    }
-    else{
-        first = tmp;
-        last = tmp;
-        tmp->next = NULL;
-        tmp -> prev = NULL;
     }
 }
 
 template<class T>
 void Dlist<T>::insertBack(T *op) {
     if (op == NULL) { return; }
-    if (isEmpty() && first!=NULL) {
-        first->op = op;
-        return;
-    }
     node *tmp = new node;
     tmp->op = op;
-    if (!isEmpty()){
+    if (isEmpty()) {
+        last = tmp;
+        first = tmp;
+        tmp->next = NULL;
+        tmp->prev = NULL;
+    } else {
+        last->next = tmp;
         tmp->prev = last;
         tmp->next = NULL;
-        last->next = tmp;
         last = tmp;
-    }
-    else{
-        first = tmp;
-        last = tmp;
-        tmp->next = NULL;
-        tmp -> prev = NULL;
     }
 }
 
@@ -78,7 +60,12 @@ T *Dlist<T>::removeFront() {
     node *tmp = first;
     T *tmp_op = tmp->op;
     first = tmp->next;
-    if(first==NULL){last=NULL;}
+    if (first == NULL) {
+        last = NULL;
+    }
+    else{
+        first->prev=NULL;
+    }
     delete tmp;
     return tmp_op;
 }
@@ -92,11 +79,15 @@ T *Dlist<T>::removeBack() {
     node *tmp = last;
     T *tmp_op = tmp->op;
     last = tmp->prev;
-    if(last==NULL){first=NULL;}
+    if (last == nullptr) { // no node left
+        first = nullptr;
+    }
+    else{
+        last->next=nullptr;
+    }
     delete tmp;
     return tmp_op;
 }
-
 template<class T>
 void Dlist<T>::removeAll() {
     node *iter = first;
@@ -106,24 +97,18 @@ void Dlist<T>::removeAll() {
         delete tmp;
     }
 }
-
 template<class T>
 Dlist<T>::~Dlist() {
     removeAll();
 }
-
 
 template<class T>
 void Dlist<T>::copyAll(const Dlist &l) {
     if (this == &l) { return; }
     if (!isEmpty()) {
         removeAll();
-        node *newnode = new node;
-        newnode->op = NULL;
-        newnode->next = NULL;
-        newnode->prev = NULL;
-        first = newnode;
-        last = newnode;
+        first=NULL;
+        last=NULL;
     }
     node *iter = l.first;
     while (iter) {
@@ -131,29 +116,27 @@ void Dlist<T>::copyAll(const Dlist &l) {
         this->insertBack(tmp_op);
         iter=iter->next;
     }
-
 }
 
 template<class T>
 Dlist<T>::Dlist(const Dlist &l) {
-    node *newnode = new node;
-    newnode->op = NULL;
-    newnode->next = NULL;
-    newnode->prev = NULL;
-    first = newnode;
-    last = newnode;
+    first=NULL;
+    last=NULL;
     copyAll(l);
 }
-
 template<class T>
 Dlist<T> &Dlist<T>::operator=(const Dlist &l) {
-    if (this == &l) { return *this; }
-    copyAll(l);
+    if (this != &l) {
+        removeAll();
+        copyAll(l);
+    }
     return *this;
 }
-
 template<class T>
 T *Dlist<T>::remove(bool (*cmp)(const T *, const T *), T *ref) {
+    if(isEmpty()){
+        return NULL;
+    }
     node* iter=first;
     bool flag=false;
     int size=0;
@@ -167,7 +150,6 @@ T *Dlist<T>::remove(bool (*cmp)(const T *, const T *), T *ref) {
     if(!flag){
         return NULL;
     }
-
     T* result;
     for(int i=0;i<size;++i){
         iter=first;
@@ -182,5 +164,4 @@ T *Dlist<T>::remove(bool (*cmp)(const T *, const T *), T *ref) {
     return result;
 
 }
-
-#endif //PROJECT_5_RELATED_FILES_DLIST_IMPL_H
+#endif //P5_DLIST_IMPL_H

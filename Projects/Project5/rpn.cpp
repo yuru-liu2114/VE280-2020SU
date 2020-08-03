@@ -30,7 +30,7 @@ bool is_num(string c){
     return c[0] >= 48 && c[0] <= 57;
 }
 
-bool is_operator(string c){
+bool is_operator(const string &c){
     return c=="+" || c=="-" || c=="*" || c=="/";
 }
 
@@ -109,19 +109,21 @@ int main(){
                 }
                 else{
                 string* top=operator_str.top();
-                while(*top!="(" && b1){
-                    top = operator_str.top();
-                    output_str+=*top;
+                string top_str = *top;
+                while(top_str!="(" && b1){
+                    output_str+=top_str;
                     output_str+=" ";
                     operator_str.pop();
                     b1=!operator_str.isEmpty();
-                    if(b1){top = operator_str.top();}
+                    if(b1){
+                        top = operator_str.top();
+                        top_str = *top;}
                 }
                 if(!b1){
                         cout << "ERROR: Parenthesis mismatch" << endl;
                         exit(0);
                 }
-                if(!operator_str.isEmpty() && *top=="(") {
+                if(!operator_str.isEmpty() && top_str=="(") {
                     operator_str.pop();
                 }
             }}
@@ -130,12 +132,18 @@ int main(){
     while(!operator_str.isEmpty()){
         string* top = operator_str.top();
         if(*top=="(") {
+            operator_str.pop();//TODO: mind
             cout << "ERROR: Parenthesis mismatch" << endl;
             exit(0);
         }
         output_str+=*top;
         output_str+=" ";
         operator_str.pop();
+    }
+    if(output_str.empty()){
+        cout<<endl;
+        cout << "ERROR: Not enough operands" << endl;
+        exit(0);
     }
     cout<<output_str<<endl;
     istringstream istream1(output_str);
@@ -193,7 +201,7 @@ int main(){
         cout << "ERROR: Too many operands" << endl;
         exit(0);
     }
-    cout<<*operand.top()<<endl;
+    cout<<*operand.top();
     operand.pop();
     return 0;
 }
